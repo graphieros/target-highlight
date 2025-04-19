@@ -49,10 +49,13 @@ const options = {
 
 // Target an element using any selector
 
-targetHighlight("#myDiv");
+targetHighlight("#myDiv", {
+  ...options,
+  tooltip: "This is my div",
+});
 
 // Or target many elements
-targetHighlight(".myClass");
+targetHighlight(".myClass", options);
 
 // Remove all highlights
 targetHide();
