@@ -66,15 +66,15 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <div id="left" style="position: fixed; top: 0; left: 0">FIXED</div>
     <h1>target-highlight</h1>
     <h2>Playground</h2>
-    <div id="div1">
+    <div id="div1" style="height: 500px">
       <span>DIV 1</span>
       <span class="span">SPAN</span>
     </div>
-    <div id="div2" data-step>
+    <div id="div2" data-step style="height: 500px">
       <span>DIV 2</span>
       <span class="span">SPAN</span>
     </div>
-    <div id="div3">
+    <div id="div3" style="height: 500px">
       <span>DIV 3</span>
       <span class="span">SPAN</span>
     </div>

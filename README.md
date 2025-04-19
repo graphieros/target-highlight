@@ -47,6 +47,11 @@ const options = {
   borderRadius: 2,
   overlayZIndex: 2,
   hidePointerEvents: false,
+  scrollToTarget: {
+    behavior: "smooth",
+    block: "center",
+    inline: "center",
+  },
 };
 
 // Target an element using any selector

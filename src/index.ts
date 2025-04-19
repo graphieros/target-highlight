@@ -12,6 +12,11 @@ export interface HighlightOptions {
     hidePointerEvents?: boolean;
     nextCallback?: () => void;
     previousCallback?: () => void;
+    scrollToTarget?: null | {
+        behavior?: 'smooth' | 'instant' | 'auto',
+        block?: 'start' | 'center' | 'end' | 'nearest',
+        inline?: 'start' | 'center' | 'end' | 'nearest'
+    };
 }
 
 const defaultOptions: Required<HighlightOptions> = {
@@ -25,7 +30,8 @@ const defaultOptions: Required<HighlightOptions> = {
     tooltip: '',
     hidePointerEvents: true,
     nextCallback: () => {},
-    previousCallback: () => {}
+    previousCallback: () => {},
+    scrollToTarget: null
 };
 
 let svgOverlay: SVGSVGElement | null = null;
@@ -309,6 +315,10 @@ function doShow(): void {
         } else {
             tooltips = rects.map(r => createTooltip(r, currentOptions));
         }
+    }
+
+    if (currentOptions.scrollToTarget && elements.length) {
+        elements[0].scrollIntoView(currentOptions.scrollToTarget);
     }
 
     window.addEventListener('resize', onResize);
