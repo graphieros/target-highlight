@@ -12,6 +12,7 @@ export interface HighlightOptions {
     hidePointerEvents?: boolean;
     nextCallback?: () => void;
     previousCallback?: () => void;
+    stopCallback?: () => void;
     scrollToTarget?: null | {
         behavior?: 'smooth' | 'instant' | 'auto',
         block?: 'start' | 'center' | 'end' | 'nearest',
@@ -31,6 +32,7 @@ const defaultOptions: Required<HighlightOptions> = {
     hidePointerEvents: true,
     nextCallback: () => {},
     previousCallback: () => {},
+    stopCallback: () => {},
     scrollToTarget: null
 };
 
@@ -118,6 +120,9 @@ function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>): S
     svg.style.pointerEvents = opts.hidePointerEvents ? 'none' : 'all';
 
     document.body.appendChild(svg);
+
+    document.body.setAttribute('data-target-highlight', '')
+
     return svg;
 }
 
@@ -331,16 +336,21 @@ export function targetHide(): void {
     tooltips.forEach(t => t.remove());
     tooltips = [];
     window.removeEventListener('resize', onResize);
+    document.body.removeAttribute('data-target-highlight')
 }
 
 export function applyStepListeners(options: HighlightOptions = {}) {
     const buttonNext = document.querySelector('#target-highlight-button-next');
     const buttonPrevious = document.querySelector('#target-highlight-button-previous');
+    const buttonStop = document.querySelector('#target-highlight-button-stop');
     if (buttonNext && options.nextCallback) {
-        buttonNext.addEventListener('click', options.nextCallback)
+        buttonNext.addEventListener('click', options.nextCallback);
     }
     if (buttonPrevious && options.previousCallback) {
-        buttonPrevious.addEventListener('click', options.previousCallback)
+        buttonPrevious.addEventListener('click', options.previousCallback);
+    }
+    if (buttonStop && options.stopCallback) {
+        buttonStop.addEventListener('click', options.stopCallback);
     }
 }
 

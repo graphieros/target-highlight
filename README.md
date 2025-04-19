@@ -48,10 +48,14 @@ const options = {
   overlayZIndex: 2,
   hidePointerEvents: false,
   scrollToTarget: {
+    // Use the same options as the native scrollIntoView api
     behavior: "smooth",
     block: "center",
     inline: "center",
   },
+  nextCallback: () => {}, // use your callback when clicking on a button with an id of target-highlight-button-previous
+  previousCallback: () => {}, // use your callback when clicking on a button with an id of target-highlight-button-previous
+  stopCallback: () => {}, // use your callback when clicking on a button with an id of target-highlight-button-stop
 };
 
 // Target an element using any selector
@@ -90,4 +94,49 @@ targetHighlight("#myDiv", {
     `;
   },
 });
+```
+
+## Defining steps
+
+You can create a scenario to move from step to step.
+Add data-step="step" on the elements part of the scenario, where step is a number.
+
+```js
+// Define step variables
+const step = {
+  current: 0,
+  max: 5,
+};
+
+// Define a function to call the library and apply event listeners
+// In this example, chevron icons are added as plain svg
+// Buttons with id #target-highlight-button-previous and #target-highlight-button-next will be recognized by the library, and events attached to them.
+function applySteps() {
+  targetHighlight(`[data-step="${step.current}"]`, {
+    ...options,
+    tooltip: () => {
+      return `<div style="position:relative; padding: 0 24px">This is step ${step.value}</div><button id="target-highlight-button-previous" style="position: absolute; top: 50%; left: 0; transform: translateY(-50%)">${chevronLeftIcon}</button><button id="target-highlight-button-next" style="position: absolute; top: 50%; right: 0; transform: translateY(-50%)">${chevronRightIcon}</button>`;
+    },
+  });
+
+  setTimeout(() => {
+    applyStepListeners(options);
+  }, 10);
+}
+
+// Define a function to move through the steps
+function moveStep(direction) {
+  if (direction === "next") {
+    step.current += 1;
+    if (step.current > step.max) {
+      step.current = 0;
+    }
+  } else {
+    step.current -= 1;
+    if (step.current < 0) {
+      step.current = step.max;
+    }
+  }
+  applySteps();
+}
 ```

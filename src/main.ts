@@ -55,15 +55,15 @@ setTimeout(() => {
 }, 6000)
 
 setTimeout(() => {
-  const btn = document.getElementById('btn');
+  const btn = document.getElementById('left');
   btn?.addEventListener('click', () => {
-    console.log('click')
+    targetHide()
   })
 },1)
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
-    <div id="left" style="position: fixed; top: 0; left: 0">FIXED</div>
+    <button id="left" style="position: fixed; top: 0; left: 0">STOP</button>
     <h1>target-highlight</h1>
     <h2>Playground</h2>
     <div id="div1" style="height: 500px">
