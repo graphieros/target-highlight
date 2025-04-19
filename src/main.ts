@@ -9,6 +9,7 @@ const options: HighlightOptions = {
   padding: '2px',
   borderRadius: 2,
   overlayZIndex: 2,
+  hidePointerEvents: true
 }
 
 targetHighlight('h1', options)
@@ -44,9 +45,16 @@ setTimeout(() => {
   })
 }, 5000)
 
+// setTimeout(() => {
+//   targetHide()
+// }, 6000)
+
 setTimeout(() => {
-  targetHide()
-}, 6000)
+  const btn = document.getElementById('btn');
+  btn?.addEventListener('click', () => {
+    console.log('click')
+  })
+},1)
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -64,5 +72,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <span>DIV 3</span>
       <span class="span">SPAN</span>
     </div>
+    <button id="btn">CLICK</button>
   </div>
 `

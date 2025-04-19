@@ -9,6 +9,7 @@ export interface HighlightOptions {
     tooltip?: string;
     singleTooltip?: boolean;
     padding?: string;
+    hidePointerEvents?: boolean;
 }
 
 const defaultOptions: Required<HighlightOptions> = {
@@ -20,6 +21,7 @@ const defaultOptions: Required<HighlightOptions> = {
     padding: '0',
     singleTooltip: true,
     tooltip: '',
+    hidePointerEvents: true
 };
 
 let svgOverlay: SVGSVGElement | null = null;
@@ -103,6 +105,7 @@ function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>): S
     overlay.setAttribute('fill', opts.overlayColor);
     overlay.setAttribute('mask', `url(#${maskId})`);
     svg.appendChild(overlay);
+    svg.style.pointerEvents = opts.hidePointerEvents ? 'none' : 'all';
 
     document.body.appendChild(svg);
     return svg;

@@ -44,6 +44,7 @@ const options = {
   padding: "2px", // same as css
   borderRadius: 2,
   overlayZIndex: 2,
+  hidePointerEvents: false,
 };
 
 // Target an element using any selector
