@@ -1,5 +1,5 @@
 import './style.css'
-import { show, hide, defaultConfig, HighlightOptions } from "../dist/target-highlight.js"
+import { targetHighlight, targetHide, defaultConfig, HighlightOptions } from "../dist/target-highlight.js"
 
 const options: HighlightOptions = {
   overlayColor: '#00000080',
@@ -11,38 +11,42 @@ const options: HighlightOptions = {
   overlayZIndex: 2,
 }
 
-show('h1', options)
+targetHighlight('h1', options)
 
 setTimeout(() => {
-  show('h2', {
+  targetHighlight('h2', {
     ...options,
     tooltip: 'This is h2'
   })
 }, 1000)
 setTimeout(() => {
-  show('#div1', {
+  targetHighlight('#div1', {
     ...options,
     tooltip: 'This is DIV 1'
   })
 }, 2000)
 setTimeout(() => {
-  show('#div2', {
+  targetHighlight('#div2', {
     ...options,
     tooltip: 'This is DIV 2'
   })
 }, 3000)
 setTimeout(() => {
-  show('#div3', {
+  targetHighlight('#div3', {
     ...options,
     tooltip: 'This is DIV 3'
   })
 }, 4000)
 setTimeout(() => {
-  show('.span', {
+  targetHighlight('.span', {
     ...options,
     tooltip: 'These are spans'
   })
 }, 5000)
+
+setTimeout(() => {
+  targetHide()
+}, 6000)
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>

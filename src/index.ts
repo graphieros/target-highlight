@@ -166,7 +166,7 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
     return tip;
 }
 
-export function show(selectorOrElement: Selector, options: HighlightOptions = {}): void {
+export function targetHighlight(selectorOrElement: Selector, options: HighlightOptions = {}): void {
     currentSelector = selectorOrElement;
     currentOptions = { ...defaultOptions, ...options };
 
@@ -187,7 +187,7 @@ function doShow(): void {
         throw new Error(`Element not found: ${currentSelector}`);
     }
 
-    hide();
+    targetHide();
 
     // compute padded rects
     let rects = elements.map(el => el.getBoundingClientRect());
@@ -226,7 +226,7 @@ function doShow(): void {
     window.addEventListener('resize', onResize);
 }
 
-export function hide(): void {
+export function targetHide(): void {
     if (svgOverlay) { svgOverlay.remove(); svgOverlay = null; }
     highlightBorders.forEach(b => b.remove());
     highlightBorders = [];
