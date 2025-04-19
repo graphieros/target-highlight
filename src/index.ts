@@ -10,6 +10,8 @@ export interface HighlightOptions {
     singleTooltip?: boolean;
     padding?: string;
     hidePointerEvents?: boolean;
+    nextCallback?: () => void;
+    previousCallback?: () => void;
 }
 
 const defaultOptions: Required<HighlightOptions> = {
@@ -21,7 +23,9 @@ const defaultOptions: Required<HighlightOptions> = {
     padding: '0',
     singleTooltip: true,
     tooltip: '',
-    hidePointerEvents: true
+    hidePointerEvents: true,
+    nextCallback: () => {},
+    previousCallback: () => {}
 };
 
 let svgOverlay: SVGSVGElement | null = null;
@@ -143,7 +147,7 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
         zIndex: String(opts.overlayZIndex),
         whiteSpace: 'nowrap',
     });
-    
+
     document.body.appendChild(tip);
 
     const w = tip.offsetWidth;
@@ -262,6 +266,17 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
     return tip;
 }
 
+function setupListeners(options: HighlightOptions = {}) {
+    const buttonNext = document.querySelector('#target-highlight-button-next');
+    const buttonPrevious = document.querySelector('#target-highlight-button-previous');
+    if (buttonNext && options.nextCallback) {
+        buttonNext.addEventListener('click', options.nextCallback)
+    }
+    if (buttonPrevious && options.previousCallback) {
+        buttonPrevious.addEventListener('click', options.previousCallback)
+    }
+}
+
 export function targetHighlight(selectorOrElement: Selector, options: HighlightOptions = {}): void {
     currentSelector = selectorOrElement;
     currentOptions = { ...defaultOptions, ...options };
@@ -271,6 +286,7 @@ export function targetHighlight(selectorOrElement: Selector, options: HighlightO
         document.addEventListener('DOMContentLoaded', run, { once: true });
     } else {
         run();
+        setupListeners(options)
     }
 }
 

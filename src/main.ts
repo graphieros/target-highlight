@@ -9,7 +9,7 @@ const options: HighlightOptions = {
   padding: '2px',
   borderRadius: 2,
   overlayZIndex: 2,
-  hidePointerEvents: true
+  hidePointerEvents: true,
 }
 
 targetHighlight('h1', options)
@@ -79,5 +79,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <span class="span">SPAN</span>
     </div>
     <button id="btn">CLICK</button>
+    <button id="target-highlight-button-next">NEXT</button>
+    <button id="target-highlight-button-previous">previous</button>
   </div>
 `
