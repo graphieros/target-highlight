@@ -266,7 +266,7 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
     return tip;
 }
 
-function setupListeners(options: HighlightOptions = {}) {
+export function applyStepListeners(options: HighlightOptions = {}) {
     const buttonNext = document.querySelector('#target-highlight-button-next');
     const buttonPrevious = document.querySelector('#target-highlight-button-previous');
     if (buttonNext && options.nextCallback) {
@@ -286,7 +286,7 @@ export function targetHighlight(selectorOrElement: Selector, options: HighlightO
         document.addEventListener('DOMContentLoaded', run, { once: true });
     } else {
         run();
-        setupListeners(options)
+        applyStepListeners(options)
     }
 }
 
