@@ -1,0 +1,64 @@
+import './style.css'
+import { show, hide, defaultConfig, HighlightOptions } from "../dist/target-highlight.js"
+
+const options: HighlightOptions = {
+  overlayColor: '#00000080',
+  borderColor: "transparent",
+  tooltip: "This is h1",
+  singleTooltip: true,
+  padding: '2px',
+  borderRadius: 2,
+  overlayZIndex: 2,
+}
+
+show('h1', options)
+
+setTimeout(() => {
+  show('h2', {
+    ...options,
+    tooltip: 'This is h2'
+  })
+}, 1000)
+setTimeout(() => {
+  show('#div1', {
+    ...options,
+    tooltip: 'This is DIV 1'
+  })
+}, 2000)
+setTimeout(() => {
+  show('#div2', {
+    ...options,
+    tooltip: 'This is DIV 2'
+  })
+}, 3000)
+setTimeout(() => {
+  show('#div3', {
+    ...options,
+    tooltip: 'This is DIV 3'
+  })
+}, 4000)
+setTimeout(() => {
+  show('.span', {
+    ...options,
+    tooltip: 'These are spans'
+  })
+}, 5000)
+
+document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+  <div>
+    <h1>target-highlight</h1>
+    <h2>Playground</h2>
+    <div id="div1">
+      <span>DIV 1</span>
+      <span class="span">SPAN</span>
+    </div>
+    <div id="div2" data-step>
+      <span>DIV 2</span>
+      <span class="span">SPAN</span>
+    </div>
+    <div id="div3">
+      <span>DIV 3</span>
+      <span class="span">SPAN</span>
+    </div>
+  </div>
+`

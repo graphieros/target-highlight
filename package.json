@@ -1,0 +1,42 @@
+{
+  "name": "target-highlight",
+  "private": false,
+  "version": "0.0.1-beta.0",
+  "type": "module",
+  "description": "Highlight DOM elements by overlaying the rest of the page",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "highlight",
+    "overlay",
+    "dom",
+    "tour",
+    "spotlight"
+  ],
+  "author": "Alec Lloyd Probert",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphieros/target-highlight.git"
+  },
+  "main": "dist/target-highlight.umd.cjs",
+  "module": "dist/target-highlight.js",
+  "exports": {
+    ".": {
+      "import": "./dist/target-highlight.js",
+      "require": "./dist/target-highlight.umd.cjs"
+    }
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2",
+    "vite": "^6.3.1",
+    "vite-plugin-dts": "^4.5.3"
+  }
+}
