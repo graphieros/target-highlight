@@ -266,30 +266,6 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
     return tip;
 }
 
-export function applyStepListeners(options: HighlightOptions = {}) {
-    const buttonNext = document.querySelector('#target-highlight-button-next');
-    const buttonPrevious = document.querySelector('#target-highlight-button-previous');
-    if (buttonNext && options.nextCallback) {
-        buttonNext.addEventListener('click', options.nextCallback)
-    }
-    if (buttonPrevious && options.previousCallback) {
-        buttonPrevious.addEventListener('click', options.previousCallback)
-    }
-}
-
-export function targetHighlight(selectorOrElement: Selector, options: HighlightOptions = {}): void {
-    currentSelector = selectorOrElement;
-    currentOptions = { ...defaultOptions, ...options };
-
-    const run = () => setTimeout(doShow, 0);
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', run, { once: true });
-    } else {
-        run();
-        applyStepListeners(options)
-    }
-}
-
 function doShow(): void {
     if (!currentSelector) return;
     const elements = typeof currentSelector === 'string'
@@ -345,6 +321,30 @@ export function targetHide(): void {
     tooltips.forEach(t => t.remove());
     tooltips = [];
     window.removeEventListener('resize', onResize);
+}
+
+export function applyStepListeners(options: HighlightOptions = {}) {
+    const buttonNext = document.querySelector('#target-highlight-button-next');
+    const buttonPrevious = document.querySelector('#target-highlight-button-previous');
+    if (buttonNext && options.nextCallback) {
+        buttonNext.addEventListener('click', options.nextCallback)
+    }
+    if (buttonPrevious && options.previousCallback) {
+        buttonPrevious.addEventListener('click', options.previousCallback)
+    }
+}
+
+export function targetHighlight(selectorOrElement: Selector, options: HighlightOptions = {}): void {
+    currentSelector = selectorOrElement;
+    currentOptions = { ...defaultOptions, ...options };
+
+    const run = () => setTimeout(doShow, 0);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run, { once: true });
+    } else {
+        run();
+        applyStepListeners(options)
+    }
 }
 
 function onResize(): void {
