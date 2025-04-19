@@ -1,7 +1,7 @@
 {
   "name": "target-highlight",
   "private": false,
-  "version": "0.0.1-beta.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Highlight DOM elements by overlaying the rest of the page",
   "types": "dist/index.d.ts",
