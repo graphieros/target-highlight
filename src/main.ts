@@ -45,9 +45,14 @@ setTimeout(() => {
   })
 }, 5000)
 
-// setTimeout(() => {
-//   targetHide()
-// }, 6000)
+setTimeout(() => {
+  targetHighlight('#left', {
+    ...options,
+    tooltip: () => {
+      return `<div>TEST</div>`
+    }
+  })
+}, 6000)
 
 setTimeout(() => {
   const btn = document.getElementById('btn');
@@ -58,6 +63,7 @@ setTimeout(() => {
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
+    <div id="left" style="position: fixed; top: 0; left: 0">FIXED</div>
     <h1>target-highlight</h1>
     <h2>Playground</h2>
     <div id="div1">

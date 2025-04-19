@@ -6,7 +6,7 @@ export interface HighlightOptions {
     borderWidth?: number;
     borderRadius?: number;
     overlayZIndex?: number;
-    tooltip?: string;
+    tooltip?: string | (() => string);
     singleTooltip?: boolean;
     padding?: string;
     hidePointerEvents?: boolean;
@@ -132,40 +132,133 @@ function createBorder(rect: DOMRect, opts: Required<HighlightOptions>): HTMLElem
 function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLElement {
     const tip = document.createElement('div');
     tip.className = 'target-highlight-tooltip';
-    tip.textContent = opts.tooltip;
+    if (typeof opts.tooltip === 'function') {
+        tip.innerHTML = opts.tooltip();
+    } else {
+        tip.textContent = opts.tooltip;
+    }
     Object.assign(tip.style, {
         position: 'absolute',
         visibility: 'hidden',
         zIndex: String(opts.overlayZIndex),
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
     });
+    
     document.body.appendChild(tip);
 
-    const w = tip.offsetWidth, h = tip.offsetHeight;
+    const w = tip.offsetWidth;
+    const h = tip.offsetHeight;
     const margin = 8;
-    const vw = Math.max(document.body.clientWidth, document.documentElement.clientWidth);
-    const vh = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    let left: number, top: number;
-    if (rect.top >= h + margin) {
-        top = rect.top + window.scrollY - h - margin;
-        left = rect.left + window.scrollX + (rect.width - w) / 2;
-    } else if (vh - rect.bottom >= h + margin) {
-        top = rect.bottom + window.scrollY + margin;
-        left = rect.left + window.scrollX + (rect.width - w) / 2;
-    } else if (vw - rect.right >= w + margin) {
-        top = rect.top + window.scrollY + (rect.height - h) / 2;
-        left = rect.right + window.scrollX + margin;
-    } else {
-        top = rect.top + window.scrollY + (rect.height - h) / 2;
-        left = rect.left + window.scrollX - w - margin;
+    const clamp = (val: number, min: number, max: number) =>
+        Math.min(Math.max(val, min), max);
+
+    const overlapsElement = (l: number, t: number) =>
+        l < rect.left + rect.width &&
+        l + w > rect.left &&
+        t < rect.top + rect.height &&
+        t + h > rect.top;
+
+    // Define placements in priority order
+    const placements: Array<{
+        name: 'top' | 'bottom' | 'right' | 'left';
+        compute: () => { l: number; t: number };
+    }> = [
+            {
+                name: 'top',
+                compute: () => ({
+                    l: rect.left + (rect.width - w) / 2,
+                    t: rect.top - h - margin
+                })
+            },
+            {
+                name: 'bottom',
+                compute: () => ({
+                    l: rect.left + (rect.width - w) / 2,
+                    t: rect.bottom + margin
+                })
+            },
+            {
+                name: 'right',
+                compute: () => ({
+                    l: rect.right + margin,
+                    t: rect.top + (rect.height - h) / 2
+                })
+            },
+            {
+                name: 'left',
+                compute: () => ({
+                    l: rect.left - w - margin,
+                    t: rect.top + (rect.height - h) / 2
+                })
+            }
+        ];
+
+    type Choice = { name: string; l: number; t: number };
+    let choice: Choice | null = null;
+
+    // Try each placement **ideal** position: fits viewport & no overlap
+    for (const { name, compute } of placements) {
+        const { l, t } = compute();
+        if (
+            l >= margin &&
+            t >= margin &&
+            l + w <= vw - margin &&
+            t + h <= vh - margin &&
+            !overlapsElement(l, t)
+        ) {
+            choice = { name, l, t };
+            break;
+        }
     }
 
-    Object.assign(tip.style, {
-        top: `${top}px`,
-        left: `${left}px`,
-        visibility: 'visible'
-    });
+    // Fallback: try clamped positions that avoid overlap
+    if (!choice) {
+        for (const { name, compute } of placements) {
+            const { l: rawL, t: rawT } = compute();
+            const l = clamp(rawL, margin, vw - margin - w);
+            const t = clamp(rawT, margin, vh - margin - h);
+            if (!overlapsElement(l, t)) {
+                choice = { name, l, t };
+                break;
+            }
+        }
+    }
+
+    // Fallback: any placement that fits viewport (even if overlaps), clamped
+    if (!choice) {
+        for (const { name, compute } of placements) {
+            const { l: rawL, t: rawT } = compute();
+            if (
+                rawL >= margin &&
+                rawT >= margin &&
+                rawL + w <= vw - margin &&
+                rawT + h <= vh - margin
+            ) {
+                const l = clamp(rawL, margin, vw - margin - w);
+                const t = clamp(rawT, margin, vh - margin - h);
+                choice = { name, l, t };
+                break;
+            }
+        }
+    }
+
+    // Last resort: clamp “top” into viewport
+    if (!choice) {
+        const { l: rawL, t: rawT } = placements[0].compute();
+        const l = clamp(rawL, margin, vw - margin - w);
+        const t = clamp(rawT, margin, vh - margin - h);
+        choice = { name: 'top', l, t };
+    }
+
+    // Position and expose placement
+    tip.setAttribute('data-placement', choice.name);
+    tip.style.left = `${choice.l + window.scrollX}px`;
+    tip.style.top = `${choice.t + window.scrollY}px`;
+    tip.style.visibility = 'visible';
+
     return tip;
 }
 

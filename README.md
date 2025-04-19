@@ -71,3 +71,18 @@ Target the following css class to customize the tooltip:
 .target-highlight-tooltip {
 }
 ```
+
+The tooltip can also be passed a callback returning html content:
+
+```js
+targetHighlight("#myDiv", {
+  ...config,
+  tooltip: () => {
+    return `
+      <div>
+        My custom tooltip
+      </div>
+    `;
+  },
+});
+```
