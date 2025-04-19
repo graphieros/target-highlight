@@ -1,5 +1,10 @@
 # target-highlight
 
+[![npm](https://img.shields.io/npm/v/target-highlight)](https://github.com/graphieros/target-highlight)
+[![GitHub issues](https://img.shields.io/github/issues/graphieros/target-highlight)](https://github.com/graphieros/target-highlight/issues)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/graphieros/target-highlight?tab=MIT-1-ov-file#readme)
+[![npm](https://img.shields.io/npm/dt/target-highlight)](https://github.com/graphieros/target-highlight)
+
 A lightweight, zero‑dependency JavaScript library to spotlight DOM elements with a customizable overlay, border, padding, and optional tooltip. Single or multiple elements can be highlighted, using usual selectors.
 
 **target-highlight** can be used for example to setup a tutorial by highlighting elements.
