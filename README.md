@@ -7,6 +7,8 @@
 
 A lightweight, zero‑dependency JavaScript library to spotlight DOM elements with a customizable overlay, border, padding, and optional tooltip. Single or multiple elements can be highlighted, using usual selectors.
 
+[DEMO](https://target-highlight.graphieros.com)
+
 **target-highlight** can be used for example to setup a tutorial by highlighting elements.
 
 ## Features
