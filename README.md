@@ -108,6 +108,13 @@ const step = {
   max: 5,
 };
 
+// Define callbacks in options
+const options = {
+  nextCallback: () => moveStep("next"),
+  previousCallback: () => moveStep("previous"),
+  stopCallback: targetHide,
+};
+
 // Define a function to call the library and apply event listeners
 // In this example, chevron icons are added as plain svg
 // Buttons with id #target-highlight-button-previous and #target-highlight-button-next will be recognized by the library, and events attached to them.
