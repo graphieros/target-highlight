@@ -179,7 +179,7 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
                 l: rect.left + (rect.width - w) / 2,
                 t: rect.top - h - margin
             },
-            { 
+            {
                 name: 'bottom',
                 l: rect.left + (rect.width - w) / 2,
                 t: rect.bottom + margin
@@ -259,6 +259,15 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
         finalName = 'left';
     } else if (choice.l >= rect.right) {
         finalName = 'right';
+    }
+
+    if (finalName === 'bottom') {
+        // recompute viewport coords for bottom precisely under element
+        let idealL = rect.left + (rect.width - w) / 2;
+        idealL = clamp(idealL, margin, vw - margin - w);
+        const idealT = rect.bottom + margin;
+        choice.l = idealL;
+        choice.t = idealT;
     }
 
     tip.setAttribute('data-placement', finalName);
