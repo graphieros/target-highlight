@@ -42,6 +42,15 @@ let tooltips: HTMLElement[] = [];
 let currentSelector: Selector | null = null;
 let currentOptions: Required<HighlightOptions> = { ...defaultOptions };
 
+function isElementOrAncestorFixed(el: Element): boolean {
+    let e: Element | null = el;
+    while (e && e !== document.documentElement) {
+        if (getComputedStyle(e).position === 'fixed') return true;
+        e = e.parentElement;
+    }
+    return false;
+}
+
 // Parse any CSS padding shorthand into numeric px values
 function parsePadding(padding: string) {
     const el = document.createElement('div');
@@ -60,19 +69,19 @@ function parsePadding(padding: string) {
     return res;
 }
 
-function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>): SVGSVGElement {
+function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>, overlayFixed: boolean): SVGSVGElement {
     const XMLNS = 'http://www.w3.org/2000/svg';
     const pageWidth = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
     const pageHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
 
     const svg = document.createElementNS(XMLNS, 'svg');
     Object.assign(svg.style, {
-        position: 'absolute',
+        position: overlayFixed ? 'fixed' : 'absolute',
         top: '0',
         left: '0',
         width: `${pageWidth}px`,
         height: `${pageHeight}px`,
-        pointerEvents: 'auto',
+        pointerEvents: opts.hidePointerEvents ? 'none' : 'all',
         zIndex: String(opts.overlayZIndex - 1)
     });
 
@@ -92,14 +101,15 @@ function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>): S
     full.setAttribute('fill', 'white');
     mask.appendChild(full);
 
-    // punch-holes with rounded corners
+    // punch-holes with optional rounded corners
     rects.forEach(r => {
         const hole = document.createElementNS(XMLNS, 'rect');
-        hole.setAttribute('x', String(r.left + window.scrollX));
-        hole.setAttribute('y', String(r.top + window.scrollY));
+        const x = overlayFixed ? r.left : r.left + window.scrollX;
+        const y = overlayFixed ? r.top : r.top + window.scrollY;
+        hole.setAttribute('x', String(x));
+        hole.setAttribute('y', String(y));
         hole.setAttribute('width', String(r.width));
         hole.setAttribute('height', String(r.height));
-        // apply borderRadius to hole corners
         hole.setAttribute('rx', String(opts.borderRadius));
         hole.setAttribute('ry', String(opts.borderRadius));
         hole.setAttribute('fill', 'black');
@@ -117,21 +127,21 @@ function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>): S
     overlay.setAttribute('fill', opts.overlayColor);
     overlay.setAttribute('mask', `url(#${maskId})`);
     svg.appendChild(overlay);
-    svg.style.pointerEvents = opts.hidePointerEvents ? 'none' : 'all';
 
     document.body.appendChild(svg);
-
     document.body.setAttribute('data-target-highlight', '')
 
     return svg;
 }
 
-function createBorder(rect: DOMRect, opts: Required<HighlightOptions>): HTMLElement {
+function createBorder(rect: DOMRect, opts: Required<HighlightOptions>, overlayFixed: boolean): HTMLElement {
     const border = document.createElement('div');
+    const left = overlayFixed ? rect.left : rect.left + window.scrollX;
+    const top = overlayFixed ? rect.top : rect.top + window.scrollY;
     Object.assign(border.style, {
-        position: 'absolute',
-        left: `${rect.left + window.scrollX - opts.borderWidth}px`,
-        top: `${rect.top + window.scrollY - opts.borderWidth}px`,
+        position: overlayFixed ? 'fixed' : 'absolute',
+        left: `${left - opts.borderWidth}px`,
+        top: `${top - opts.borderWidth}px`,
         width: `${rect.width + opts.borderWidth * 2}px`,
         height: `${rect.height + opts.borderWidth * 2}px`,
         border: `${opts.borderWidth}px solid ${opts.borderColor}`,
@@ -144,7 +154,11 @@ function createBorder(rect: DOMRect, opts: Required<HighlightOptions>): HTMLElem
     return border;
 }
 
-function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLElement {
+function createTooltip(
+    rect: DOMRect,
+    opts: Required<HighlightOptions>,
+    overlayFixed: boolean
+): HTMLElement {
     const tip = document.createElement('div');
     tip.className = 'target-highlight-tooltip';
     if (typeof opts.tooltip === 'function') {
@@ -153,10 +167,10 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
         tip.textContent = opts.tooltip;
     }
     Object.assign(tip.style, {
-        position: 'absolute',
+        position: overlayFixed ? 'fixed' : 'absolute',
         visibility: 'hidden',
         zIndex: String(opts.overlayZIndex),
-        whiteSpace: 'nowrap',
+        whiteSpace: 'nowrap'
     });
     document.body.appendChild(tip);
 
@@ -169,58 +183,62 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
         Math.min(Math.max(v, min), max);
 
     type Placement = 'top' | 'bottom' | 'right' | 'left';
-    const candidates: Array<{
-        name: Placement;
-        l: number;
-        t: number;
-    }> = [
-            {
-                name: 'top',
-                l: rect.left + (rect.width - w) / 2,
-                t: rect.top - h - margin
-            },
-            {
-                name: 'bottom',
-                l: rect.left + (rect.width - w) / 2,
-                t: rect.bottom + margin
-            },
-            {
-                name: 'right',
-                l: rect.right + margin,
-                t: rect.top + (rect.height - h) / 2
-            },
-            {
-                name: 'left',
-                l: rect.left - w - margin,
-                t: rect.top + (rect.height - h) / 2
-            }
-        ];
+    const candidates: Array<{ name: Placement; l: number; t: number }> = [
+        {
+            name: 'top',
+            l: rect.left + (rect.width - w) / 2,
+            t: rect.top - h - margin
+        },
+        {
+            name: 'bottom',
+            l: rect.left + (rect.width - w) / 2,
+            t: rect.bottom + margin
+        },
+        {
+            name: 'right',
+            l: rect.right + margin,
+            t: rect.top + (rect.height - h) / 2
+        },
+        {
+            name: 'left',
+            l: rect.left - w - margin,
+            t: rect.top + (rect.height - h) / 2
+        }
+    ];
 
     // helper: fits fully in viewport
     const fits = (l: number, t: number) =>
-        l >= margin && t >= margin &&
+        l >= margin &&
+        t >= margin &&
         l + w <= vw - margin &&
         t + h <= vh - margin;
 
+    // helper: does it overlap the target element?
+    const overlaps = (l: number, t: number) =>
+        l < rect.left + rect.width &&
+        l + w > rect.left &&
+        t < rect.top + rect.height &&
+        t + h > rect.top;
+
+    let choice:
+        | { name: Placement; l: number; t: number }
+        | null = null;
+
     // Ideal: fits & no overlap
-    let choice = candidates.find(c =>
-        fits(c.l, c.t) &&
-        !(c.l < rect.left + rect.width &&
-            c.l + w > rect.left &&
-            c.t < rect.top + rect.height &&
-            c.t + h > rect.top)
-    );
+    for (const c of candidates) {
+        if (fits(c.l, c.t) && !overlaps(c.l, c.t)) {
+            choice = { ...c };
+            break;
+        }
+    }
 
     // Fallback: clamped pos that avoids overlap
     if (!choice) {
         for (const c of candidates) {
-            const l = clamp(c.l, margin, vw - margin - w);
-            const t = clamp(c.t, margin, vh - margin - h);
-            if (!(l < rect.left + rect.width &&
-                l + w > rect.left &&
-                t < rect.top + rect.height &&
-                t + h > rect.top)) {
-                choice = { name: c.name, l, t };
+            const L = clamp(c.l, margin, vw - margin - w);
+            const T = clamp(c.t, margin, vh - margin - h);
+            if (!overlaps(L, T)) {
+                choice = { name: c.name, l: L, t: T };
                 break;
             }
         }
@@ -240,17 +258,18 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
         }
     }
 
-    // Last resort: clamp “top”
+    // Last resort: clamp top
     if (!choice) {
-        const top = candidates[0];
+        const topC = candidates[0];
         choice = {
             name: 'top',
-            l: clamp(top.l, margin, vw - margin - w),
-            t: clamp(top.t, margin, vh - margin - h)
+            l: clamp(topC.l, margin, vw - margin - w),
+            t: clamp(topC.t, margin, vh - margin - h)
         };
     }
 
-    let finalName: Placement = choice.name;
+    // Derive final placement name from actual coords
+    let finalName = choice.name;
     if (choice.t + h <= rect.top) {
         finalName = 'top';
     } else if (choice.t >= rect.bottom) {
@@ -261,18 +280,21 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
         finalName = 'right';
     }
 
+    // Force exact under-element placement
     if (finalName === 'bottom') {
-        // recompute viewport coords for bottom precisely under element
-        let idealL = rect.left + (rect.width - w) / 2;
-        idealL = clamp(idealL, margin, vw - margin - w);
-        const idealT = rect.bottom + margin;
+        const idealL = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
         choice.l = idealL;
-        choice.t = idealT;
+        choice.t = rect.bottom + margin;
     }
 
     tip.setAttribute('data-placement', finalName);
-    tip.style.left = `${choice.l + window.scrollX}px`;
-    tip.style.top = `${choice.t + window.scrollY}px`;
+
+    // apply scroll offsets only when not fixed
+    const baseX = overlayFixed ? 0 : window.scrollX;
+    const baseY = overlayFixed ? 0 : window.scrollY;
+    tip.style.left = `${choice.l + baseX}px`;
+    tip.style.top = `${choice.t + baseY}px`;
+
     tip.style.visibility = 'visible';
     return tip;
 }
@@ -285,6 +307,8 @@ function doShow(): void {
     if (elements.length === 0) {
         throw new Error(`Element not found: ${currentSelector}`);
     }
+
+    const overlayFixed = elements.every(isElementOrAncestorFixed);
 
     targetHide();
 
@@ -303,8 +327,8 @@ function doShow(): void {
         });
     }
 
-    svgOverlay = createSvgOverlay(rects, currentOptions);
-    highlightBorders = rects.map(r => createBorder(r, currentOptions));
+    svgOverlay = createSvgOverlay(rects, currentOptions, overlayFixed);
+    highlightBorders = rects.map(r => createBorder(r, currentOptions, overlayFixed));
 
     if (currentOptions.tooltip) {
         if (elements.length > 1 && currentOptions.singleTooltip) {
@@ -316,9 +340,9 @@ function doShow(): void {
             }), { top: Infinity, left: Infinity, bottom: -Infinity, right: -Infinity } as any);
             (union as any).width = union.right - union.left;
             (union as any).height = union.bottom - union.top;
-            tooltips = [createTooltip(union as DOMRect, currentOptions)];
+            tooltips = [createTooltip(union as DOMRect, currentOptions, overlayFixed)];
         } else {
-            tooltips = rects.map(r => createTooltip(r, currentOptions));
+            tooltips = rects.map(r => createTooltip(r, currentOptions, overlayFixed));
         }
     }
 

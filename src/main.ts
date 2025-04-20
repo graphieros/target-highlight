@@ -2,14 +2,19 @@ import './style.css'
 import { targetHighlight, targetHide, defaultConfig, HighlightOptions } from "../dist/target-highlight.js"
 
 const options: HighlightOptions = {
-  overlayColor: '#00000080',
+  overlayColor: 'rgba(0,0,0,0.7)',
   borderColor: "transparent",
   tooltip: "This is h1",
-  singleTooltip: true,
+  singleTooltip: false,
   padding: '2px',
   borderRadius: 2,
   overlayZIndex: 2,
   hidePointerEvents: true,
+  scrollToTarget: {
+    behavior: 'smooth',
+    block: 'center',
+    inline: 'center'
+  }
 }
 
 targetHighlight('h1', options)
