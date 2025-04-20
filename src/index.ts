@@ -301,9 +301,14 @@ function createTooltip(
 
 function doShow(): void {
     if (!currentSelector) return;
-    const elements = typeof currentSelector === 'string'
+    const allElements: Element[] = typeof currentSelector === 'string'
         ? Array.from(document.querySelectorAll(currentSelector))
         : [currentSelector];
+
+    const elements = allElements.filter(el =>
+        !el.hasAttribute('data-target-highlight-ignore')
+    );
+
     if (elements.length === 0) {
         throw new Error(`Element not found: ${currentSelector}`);
     }

@@ -73,7 +73,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <h2>Playground</h2>
     <div id="div1" style="height: 500px">
       <span>DIV 1</span>
-      <span class="span">SPAN</span>
+      <span class="span" data-target-highlight-ignore>SPAN</span>
     </div>
     <div id="div2" data-step style="height: 500px">
       <span>DIV 2</span>

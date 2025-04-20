@@ -147,3 +147,13 @@ function moveStep(direction) {
   applySteps();
 }
 ```
+
+## Ignore elements
+
+Use the data-target-highlight ignore data attribute on elements never to be highlighted:
+
+```html
+<!-- When targeting the .selection class, only one element will be highlighted -->
+<div class="selection">I will be selected</div>
+<div class="selection" data-target-highlight-ignore>I will not be selected</div>
+```
