@@ -30,9 +30,9 @@ const defaultOptions: Required<HighlightOptions> = {
     singleTooltip: true,
     tooltip: '',
     hidePointerEvents: true,
-    nextCallback: () => {},
-    previousCallback: () => {},
-    stopCallback: () => {},
+    nextCallback: () => { },
+    previousCallback: () => { },
+    stopCallback: () => { },
     scrollToTarget: null
 };
 
@@ -158,7 +158,6 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
         zIndex: String(opts.overlayZIndex),
         whiteSpace: 'nowrap',
     });
-
     document.body.appendChild(tip);
 
     const w = tip.offsetWidth;
@@ -166,114 +165,106 @@ function createTooltip(rect: DOMRect, opts: Required<HighlightOptions>): HTMLEle
     const margin = 8;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const clamp = (v: number, min: number, max: number) =>
+        Math.min(Math.max(v, min), max);
 
-    const clamp = (val: number, min: number, max: number) =>
-        Math.min(Math.max(val, min), max);
-
-    const overlapsElement = (l: number, t: number) =>
-        l < rect.left + rect.width &&
-        l + w > rect.left &&
-        t < rect.top + rect.height &&
-        t + h > rect.top;
-
-    // Define placements in priority order
-    const placements: Array<{
-        name: 'top' | 'bottom' | 'right' | 'left';
-        compute: () => { l: number; t: number };
+    type Placement = 'top' | 'bottom' | 'right' | 'left';
+    const candidates: Array<{
+        name: Placement;
+        l: number;
+        t: number;
     }> = [
             {
                 name: 'top',
-                compute: () => ({
-                    l: rect.left + (rect.width - w) / 2,
-                    t: rect.top - h - margin
-                })
+                l: rect.left + (rect.width - w) / 2,
+                t: rect.top - h - margin
             },
-            {
+            { 
                 name: 'bottom',
-                compute: () => ({
-                    l: rect.left + (rect.width - w) / 2,
-                    t: rect.bottom + margin
-                })
+                l: rect.left + (rect.width - w) / 2,
+                t: rect.bottom + margin
             },
             {
                 name: 'right',
-                compute: () => ({
-                    l: rect.right + margin,
-                    t: rect.top + (rect.height - h) / 2
-                })
+                l: rect.right + margin,
+                t: rect.top + (rect.height - h) / 2
             },
             {
                 name: 'left',
-                compute: () => ({
-                    l: rect.left - w - margin,
-                    t: rect.top + (rect.height - h) / 2
-                })
+                l: rect.left - w - margin,
+                t: rect.top + (rect.height - h) / 2
             }
         ];
 
-    type Choice = { name: string; l: number; t: number };
-    let choice: Choice | null = null;
+    // helper: fits fully in viewport
+    const fits = (l: number, t: number) =>
+        l >= margin && t >= margin &&
+        l + w <= vw - margin &&
+        t + h <= vh - margin;
 
-    // Try each placement **ideal** position: fits viewport & no overlap
-    for (const { name, compute } of placements) {
-        const { l, t } = compute();
-        if (
-            l >= margin &&
-            t >= margin &&
-            l + w <= vw - margin &&
-            t + h <= vh - margin &&
-            !overlapsElement(l, t)
-        ) {
-            choice = { name, l, t };
-            break;
-        }
-    }
+    // Ideal: fits & no overlap
+    let choice = candidates.find(c =>
+        fits(c.l, c.t) &&
+        !(c.l < rect.left + rect.width &&
+            c.l + w > rect.left &&
+            c.t < rect.top + rect.height &&
+            c.t + h > rect.top)
+    );
 
-    // Fallback: try clamped positions that avoid overlap
+    // Fallback: clamped pos that avoids overlap
     if (!choice) {
-        for (const { name, compute } of placements) {
-            const { l: rawL, t: rawT } = compute();
-            const l = clamp(rawL, margin, vw - margin - w);
-            const t = clamp(rawT, margin, vh - margin - h);
-            if (!overlapsElement(l, t)) {
-                choice = { name, l, t };
+        for (const c of candidates) {
+            const l = clamp(c.l, margin, vw - margin - w);
+            const t = clamp(c.t, margin, vh - margin - h);
+            if (!(l < rect.left + rect.width &&
+                l + w > rect.left &&
+                t < rect.top + rect.height &&
+                t + h > rect.top)) {
+                choice = { name: c.name, l, t };
                 break;
             }
         }
     }
 
-    // Fallback: any placement that fits viewport (even if overlaps), clamped
+    // Fallback: any unclamped candidate that fits
     if (!choice) {
-        for (const { name, compute } of placements) {
-            const { l: rawL, t: rawT } = compute();
-            if (
-                rawL >= margin &&
-                rawT >= margin &&
-                rawL + w <= vw - margin &&
-                rawT + h <= vh - margin
-            ) {
-                const l = clamp(rawL, margin, vw - margin - w);
-                const t = clamp(rawT, margin, vh - margin - h);
-                choice = { name, l, t };
+        for (const c of candidates) {
+            if (fits(c.l, c.t)) {
+                choice = {
+                    name: c.name,
+                    l: clamp(c.l, margin, vw - margin - w),
+                    t: clamp(c.t, margin, vh - margin - h)
+                };
                 break;
             }
         }
     }
 
-    // Last resort: clamp “top” into viewport
+    // Last resort: clamp “top”
     if (!choice) {
-        const { l: rawL, t: rawT } = placements[0].compute();
-        const l = clamp(rawL, margin, vw - margin - w);
-        const t = clamp(rawT, margin, vh - margin - h);
-        choice = { name: 'top', l, t };
+        const top = candidates[0];
+        choice = {
+            name: 'top',
+            l: clamp(top.l, margin, vw - margin - w),
+            t: clamp(top.t, margin, vh - margin - h)
+        };
     }
 
-    // Position and expose placement
-    tip.setAttribute('data-placement', choice.name);
+    let finalName: Placement = choice.name;
+    if (choice.t + h <= rect.top) {
+        finalName = 'top';
+    } else if (choice.t >= rect.bottom) {
+        finalName = 'bottom';
+    } else if (choice.l + w <= rect.left) {
+        finalName = 'left';
+    } else if (choice.l >= rect.right) {
+        finalName = 'right';
+    }
+
+    tip.setAttribute('data-placement', finalName);
     tip.style.left = `${choice.l + window.scrollX}px`;
     tip.style.top = `${choice.t + window.scrollY}px`;
     tip.style.visibility = 'visible';
-
     return tip;
 }
 
@@ -339,21 +330,49 @@ export function targetHide(): void {
     document.body.removeAttribute('data-target-highlight')
 }
 
+let _lastNext: ((e: Event) => void) | null = null;
+let _lastPrev: ((e: Event) => void) | null = null;
+let _lastStop: ((e: Event) => void) | null = null;
+
 export function applyStepListeners(options: HighlightOptions = {}) {
-    const buttonNext = document.querySelector('#target-highlight-button-next');
-    const buttonPrevious = document.querySelector('#target-highlight-button-previous');
-    const buttonStop = document.querySelector('#target-highlight-button-stop');
-    if (buttonNext && options.nextCallback) {
-        buttonNext.addEventListener('click', options.nextCallback);
+    const btnNext = document.querySelector<HTMLElement>('#target-highlight-button-next');
+    const btnPrev = document.querySelector<HTMLElement>('#target-highlight-button-previous');
+    const btnStop = document.querySelector<HTMLElement>('#target-highlight-button-stop');
+    const { nextCallback, previousCallback, stopCallback } = options;
+
+    if (btnNext) {
+        if (_lastNext) {
+            btnNext.removeEventListener('click', _lastNext);
+            _lastNext = null;
+        }
+        if (typeof nextCallback === 'function') {
+            btnNext.addEventListener('click', nextCallback);
+            _lastNext = nextCallback;
+        }
     }
-    if (buttonPrevious && options.previousCallback) {
-        buttonPrevious.addEventListener('click', options.previousCallback);
+
+    if (btnPrev) {
+        if (_lastPrev) {
+            btnPrev.removeEventListener('click', _lastPrev);
+            _lastPrev = null;
+        }
+        if (typeof previousCallback === 'function') {
+            btnPrev.addEventListener('click', previousCallback);
+            _lastPrev = previousCallback;
+        }
     }
-    if (buttonStop && options.stopCallback) {
-        buttonStop.addEventListener('click', options.stopCallback);
+
+    if (btnStop) {
+        if (_lastStop) {
+            btnStop.removeEventListener('click', _lastStop);
+            _lastStop = null;
+        }
+        if (typeof stopCallback === 'function') {
+            btnStop.addEventListener('click', stopCallback);
+            _lastStop = stopCallback;
+        }
     }
 }
-
 export function targetHighlight(selectorOrElement: Selector, options: HighlightOptions = {}): void {
     currentSelector = selectorOrElement;
     currentOptions = { ...defaultOptions, ...options };
