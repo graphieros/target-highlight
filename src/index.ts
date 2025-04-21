@@ -172,7 +172,6 @@ function createTooltip(
         position: overlayFixed ? 'fixed' : 'absolute',
         visibility: 'hidden',
         zIndex: String(opts.overlayZIndex),
-        whiteSpace: 'nowrap'
     });
     document.body.appendChild(tip);
 
