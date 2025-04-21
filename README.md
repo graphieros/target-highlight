@@ -56,6 +56,8 @@ const options = {
   nextCallback: () => {}, // use your callback when clicking on a button with an id of target-highlight-button-previous
   previousCallback: () => {}, // use your callback when clicking on a button with an id of target-highlight-button-previous
   stopCallback: () => {}, // use your callback when clicking on a button with an id of target-highlight-button-stop
+  tooltip: "My content", // can also be a callback returning html content
+  forceTooltipPosition: null, // 'top' | 'right' | 'bottom' | 'left' | null, default: null
 };
 
 // Target an element using any selector
