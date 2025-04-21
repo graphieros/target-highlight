@@ -196,21 +196,17 @@ function createTooltip(
         let l: number, t: number;
 
         if (forced === 'top') {
-            // center X, then exact above
             l = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
             t = rect.top - h - margin;
         } else if (forced === 'bottom') {
-            // center X, then exact below
             l = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
             t = rect.bottom + margin;
         } else if (forced === 'left') {
-            // exact left, center Y
             l = clamp(rect.left - w - margin, margin, vw - margin - w);
-            t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
+            t = rect.top + (rect.height - h) / 2;
         } else {
-            // exact right, center Y
             l = clamp(rect.right + margin, margin, vw - margin - w);
-            t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
+            t = rect.top + (rect.height - h) / 2;
         }
 
         tip.setAttribute('data-placement', forced);
