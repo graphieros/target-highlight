@@ -14,7 +14,8 @@ const options: HighlightOptions = {
     behavior: 'smooth',
     block: 'center',
     inline: 'center'
-  }
+  },
+  forceTooltipPosition: 'right'
 }
 
 targetHighlight('h1', options)

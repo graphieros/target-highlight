@@ -18,6 +18,7 @@ export interface HighlightOptions {
         block?: 'start' | 'center' | 'end' | 'nearest',
         inline?: 'start' | 'center' | 'end' | 'nearest'
     };
+    forceTooltipPosition?: 'top' | 'right' | 'bottom' | 'left' | null,
 }
 
 const defaultOptions: Required<HighlightOptions> = {
@@ -33,7 +34,8 @@ const defaultOptions: Required<HighlightOptions> = {
     nextCallback: () => { },
     previousCallback: () => { },
     stopCallback: () => { },
-    scrollToTarget: null
+    scrollToTarget: null,
+    forceTooltipPosition: null
 };
 
 let svgOverlay: SVGSVGElement | null = null;
@@ -184,45 +186,53 @@ function createTooltip(
 
     type Placement = 'top' | 'bottom' | 'right' | 'left';
     const candidates: Array<{ name: Placement; l: number; t: number }> = [
-        {
-            name: 'top',
-            l: rect.left + (rect.width - w) / 2,
-            t: rect.top - h - margin
-        },
-        {
-            name: 'bottom',
-            l: rect.left + (rect.width - w) / 2,
-            t: rect.bottom + margin
-        },
-        {
-            name: 'right',
-            l: rect.right + margin,
-            t: rect.top + (rect.height - h) / 2
-        },
-        {
-            name: 'left',
-            l: rect.left - w - margin,
-            t: rect.top + (rect.height - h) / 2
-        }
+        { name: 'top', l: rect.left + (rect.width - w) / 2, t: rect.top - h - margin },
+        { name: 'bottom', l: rect.left + (rect.width - w) / 2, t: rect.bottom + margin },
+        { name: 'right', l: rect.right + margin, t: rect.top + (rect.height - h) / 2 },
+        { name: 'left', l: rect.left - w - margin, t: rect.top + (rect.height - h) / 2 }
     ];
 
-    // helper: fits fully in viewport
-    const fits = (l: number, t: number) =>
-        l >= margin &&
-        t >= margin &&
-        l + w <= vw - margin &&
-        t + h <= vh - margin;
+    if (opts.forceTooltipPosition) {
+        const forced = opts.forceTooltipPosition as Placement;
+        let l: number, t: number;
 
-    // helper: does it overlap the target element?
+        if (forced === 'top') {
+            // center X, then exact above
+            l = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
+            t = rect.top - h - margin;
+        } else if (forced === 'bottom') {
+            // center X, then exact below
+            l = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
+            t = rect.bottom + margin;
+        } else if (forced === 'left') {
+            // exact left, center Y
+            l = rect.left - w - margin;
+            t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
+        } else {
+            // exact right, center Y
+            l = rect.right + margin;
+            t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
+        }
+
+        tip.setAttribute('data-placement', forced);
+        const baseX = overlayFixed ? 0 : window.scrollX;
+        const baseY = overlayFixed ? 0 : window.scrollY;
+        tip.style.left = `${l + baseX}px`;
+        tip.style.top = `${t + baseY}px`;
+        tip.style.visibility = 'visible';
+        return tip;
+    }
+
+    const fits = (l: number, t: number) =>
+        l >= margin && t >= margin && l + w <= vw - margin && t + h <= vh - margin;
+
     const overlaps = (l: number, t: number) =>
         l < rect.left + rect.width &&
         l + w > rect.left &&
         t < rect.top + rect.height &&
         t + h > rect.top;
 
-    let choice:
-        | { name: Placement; l: number; t: number }
-        | null = null;
+    let choice: { name: Placement; l: number; t: number } | null = null;
 
     // Ideal: fits & no overlap
     for (const c of candidates) {
@@ -270,41 +280,39 @@ function createTooltip(
 
     // Derive final placement name from actual coords
     let finalName = choice.name;
-    if (choice.t + h <= rect.top) {
-        finalName = 'top';
-    } else if (choice.t >= rect.bottom) {
-        finalName = 'bottom';
-    } else if (choice.l + w <= rect.left) {
-        finalName = 'left';
-    } else if (choice.l >= rect.right) {
-        finalName = 'right';
-    }
+    if (choice.t + h <= rect.top) finalName = 'top';
+    else if (choice.t >= rect.bottom) finalName = 'bottom';
+    else if (choice.l + w <= rect.left) finalName = 'left';
+    else if (choice.l >= rect.right) finalName = 'right';
 
-    // Force exact under-element placement
+    // Force exact placement on all four sides:
     if (finalName === 'bottom') {
-        const idealL = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
-        choice.l = idealL;
+        // center X, sit just below
+        choice.l = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
         choice.t = rect.bottom + margin;
-    }
-
-    // Force exact above-element placement
-    if (finalName === 'top') {
-        const idealL = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
-        choice.l = idealL;
+    } else if (finalName === 'top') {
+        // center X, sit just above
+        choice.l = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
         choice.t = rect.top - h - margin;
+    } else if (finalName === 'left') {
+        // center Y, sit just left
+        choice.t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
+        choice.l = rect.left - w - margin;
+    } else if (finalName === 'right') {
+        // center Y, sit just right
+        choice.t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
+        choice.l = rect.right + margin;
     }
 
     tip.setAttribute('data-placement', finalName);
-
-    // apply scroll offsets only when not fixed
     const baseX = overlayFixed ? 0 : window.scrollX;
     const baseY = overlayFixed ? 0 : window.scrollY;
     tip.style.left = `${choice.l + baseX}px`;
     tip.style.top = `${choice.t + baseY}px`;
-
     tip.style.visibility = 'visible';
     return tip;
 }
+
 
 function doShow(): void {
     if (!currentSelector) return;
