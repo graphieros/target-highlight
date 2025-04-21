@@ -43,6 +43,7 @@ let highlightBorders: HTMLElement[] = [];
 let tooltips: HTMLElement[] = [];
 let currentSelector: Selector | null = null;
 let currentOptions: Required<HighlightOptions> = { ...defaultOptions };
+let _didScroll = false;
 
 function isElementOrAncestorFixed(el: Element): boolean {
     let e: Element | null = el;
@@ -322,6 +323,11 @@ function doShow(): void {
         throw new Error(`Element not found: ${currentSelector}`);
     }
 
+    if (currentOptions.scrollToTarget && elements.length && !_didScroll) {
+        elements[0].scrollIntoView(currentOptions.scrollToTarget);
+        _didScroll = true;
+    }
+
     const overlayFixed = elements.every(isElementOrAncestorFixed);
 
     targetHide();
@@ -360,10 +366,6 @@ function doShow(): void {
         }
     }
 
-    if (currentOptions.scrollToTarget && elements.length) {
-        elements[0].scrollIntoView(currentOptions.scrollToTarget);
-    }
-
     window.addEventListener('resize', onResize);
 }
 
@@ -374,7 +376,8 @@ export function targetHide(): void {
     tooltips.forEach(t => t.remove());
     tooltips = [];
     window.removeEventListener('resize', onResize);
-    document.body.removeAttribute('data-target-highlight')
+    document.body.removeAttribute('data-target-highlight');
+    _didScroll = false;
 }
 
 let _lastNext: ((e: Event) => void) | null = null;
