@@ -352,20 +352,19 @@ function doShow(): void {
 
     if (currentOptions.tooltip) {
         if (elements.length > 1 && currentOptions.singleTooltip) {
-            const union = rects.reduce((u, r) => ({
+            const union: Partial<DOMRect> = rects.reduce((u, r) => ({
                 top: Math.min(u.top, r.top),
                 left: Math.min(u.left, r.left),
                 bottom: Math.max(u.bottom, r.bottom),
                 right: Math.max(u.right, r.right)
-            }), { top: Infinity, left: Infinity, bottom: -Infinity, right: -Infinity } as any);
-            (union as any).width = union.right - union.left;
-            (union as any).height = union.bottom - union.top;
+            }), { top: Infinity, left: Infinity, bottom: -Infinity, right: -Infinity });
+            union.width = (union.right ?? 0) - (union.left ?? 0);
+            union.height = (union.bottom ?? 0) - (union.top ?? 0);
             tooltips = [createTooltip(union as DOMRect, currentOptions, overlayFixed)];
         } else {
             tooltips = rects.map(r => createTooltip(r, currentOptions, overlayFixed));
         }
     }
-
     window.addEventListener('resize', onResize);
 }
 
