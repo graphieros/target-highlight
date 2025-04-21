@@ -205,11 +205,11 @@ function createTooltip(
             t = rect.bottom + margin;
         } else if (forced === 'left') {
             // exact left, center Y
-            l = rect.left - w - margin;
+            l = clamp(rect.left - w - margin, margin, vw - margin - w);
             t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
         } else {
             // exact right, center Y
-            l = rect.right + margin;
+            l = clamp(rect.right + margin, margin, vw - margin - w);
             t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
         }
 
@@ -284,7 +284,6 @@ function createTooltip(
     else if (choice.l + w <= rect.left) finalName = 'left';
     else if (choice.l >= rect.right) finalName = 'right';
 
-    // Force exact placement on all four sides:
     if (finalName === 'bottom') {
         // center X, sit just below
         choice.l = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
@@ -294,13 +293,13 @@ function createTooltip(
         choice.l = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
         choice.t = rect.top - h - margin;
     } else if (finalName === 'left') {
-        // center Y, sit just left
+        // center Y, sit just left, **clamp X**
+        choice.l = clamp(rect.left - w - margin, margin, vw - margin - w);
         choice.t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
-        choice.l = rect.left - w - margin;
     } else if (finalName === 'right') {
-        // center Y, sit just right
+        // center Y, sit just right, **clamp X**
+        choice.l = clamp(rect.right + margin, margin, vw - margin - w);
         choice.t = clamp(rect.top + (rect.height - h) / 2, margin, vh - margin - h);
-        choice.l = rect.right + margin;
     }
 
     tip.setAttribute('data-placement', finalName);
