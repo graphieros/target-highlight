@@ -287,6 +287,13 @@ function createTooltip(
         choice.t = rect.bottom + margin;
     }
 
+    // Force exact above-element placement
+    if (finalName === 'top') {
+        const idealL = clamp(rect.left + (rect.width - w) / 2, margin, vw - margin - w);
+        choice.l = idealL;
+        choice.t = rect.top - h - margin;
+    }
+
     tip.setAttribute('data-placement', finalName);
 
     // apply scroll offsets only when not fixed
