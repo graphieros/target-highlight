@@ -18,7 +18,7 @@ const options: HighlightOptions = {
   forceTooltipPosition: 'right'
 }
 
-targetHighlight('h1', options)
+targetHighlight('div', options)
 
 setTimeout(() => {
   targetHighlight('h2', {
@@ -29,13 +29,11 @@ setTimeout(() => {
 setTimeout(() => {
   targetHighlight('#div1', {
     ...options,
-    tooltip: 'This is DIV 1'
   })
 }, 2000)
 setTimeout(() => {
   targetHighlight('#div2', {
     ...options,
-    tooltip: 'This is DIV 2'
   })
 }, 3000)
 setTimeout(() => {
@@ -69,14 +67,14 @@ setTimeout(() => {
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
-    <button id="left" style="position: fixed; top: 0; left: 0">STOP</button>
+    <button id="left" style="position: fixed; top: 0; left: 0" data-target-highlight-tooltip="This is my tooltip" data-target-highlight-tooltip-position="bottom">STOP</button>
     <h1>target-highlight</h1>
     <h2>Playground</h2>
-    <div id="div1" style="height: 500px">
+    <div id="div1" data-target-highlight-tooltip="This is DIV 1!" style="height: 500px">
       <span>DIV 1</span>
       <span class="span" data-target-highlight-ignore>SPAN</span>
     </div>
-    <div id="div2" data-step style="height: 500px">
+    <div id="div2" data-step style="height: 500px" data-target-highlight-tooltip="This is DIV 2!">
       <span>DIV 2</span>
       <span class="span">SPAN</span>
     </div>

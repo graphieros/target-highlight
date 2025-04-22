@@ -98,6 +98,26 @@ targetHighlight("#myDiv", {
 });
 ```
 
+When highlighting multiple elements, you may need to show individual tooltips on each element.
+Use the data-target-highlight-tooltip attribute on the highlighted elements to setup the individual tooltip contents. You can also use the data-target-highlight-tooltip-position to force the tooltip position ('top' | 'right' | 'bottom' | 'left'). In this case, you won't need the tooltip option normally passed to targetHighlight. Bear in mind using data attributes, the tooltip content can only be a string.
+
+```html
+<div
+  class="mySelection"
+  data-target-highlight-tooltip="This is div 1"
+  data-target-highlight-tooltip-position="bottom"
+>
+  Some content
+</div>
+<div
+  class="mySelection"
+  data-target-highlight-tooltip="This is div 2"
+  data-target-highlight-tooltip-position="left"
+>
+  Some other content
+</div>
+```
+
 ## Defining steps
 
 You can create a scenario to move from step to step.

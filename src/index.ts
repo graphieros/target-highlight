@@ -350,21 +350,80 @@ function doShow(): void {
     svgOverlay = createSvgOverlay(rects, currentOptions, overlayFixed);
     highlightBorders = rects.map(r => createBorder(r, currentOptions, overlayFixed));
 
+    tooltips = [];
+
+    const withData = elements.filter(el =>
+        el.hasAttribute('data-target-highlight-tooltip')
+    );
+    const withoutData = elements.filter(el =>
+        !el.hasAttribute('data-target-highlight-tooltip')
+    );
+
+    withData.forEach(el => {
+        const idx = elements.indexOf(el);
+        const rect = rects[idx];
+        const text = el.getAttribute('data-target-highlight-tooltip')!;
+        const posAttr = el.getAttribute('data-target-highlight-tooltip-position') as
+            | 'top' | 'right' | 'bottom' | 'left'
+            | null;
+        tooltips.push(
+            createTooltip(
+                rect,
+                {
+                    ...currentOptions,
+                    tooltip: text,
+                    forceTooltipPosition: posAttr ?? currentOptions.forceTooltipPosition
+                },
+                overlayFixed
+            )
+        );
+    });
+
     if (currentOptions.tooltip) {
-        if (elements.length > 1 && currentOptions.singleTooltip) {
-            const union: Partial<DOMRect> = rects.reduce((u, r) => ({
-                top: Math.min(u.top, r.top),
-                left: Math.min(u.left, r.left),
-                bottom: Math.max(u.bottom, r.bottom),
-                right: Math.max(u.right, r.right)
-            }), { top: Infinity, left: Infinity, bottom: -Infinity, right: -Infinity });
+        if (withoutData.length > 1 && currentOptions.singleTooltip) {
+            const union = withoutData.reduce<Partial<DOMRect>>((u, el) => {
+                const r = rects[elements.indexOf(el)];
+                return {
+                    top: Math.min(u.top ?? Infinity, r.top),
+                    left: Math.min(u.left ?? Infinity, r.left),
+                    bottom: Math.max(u.bottom ?? -Infinity, r.bottom),
+                    right: Math.max(u.right ?? -Infinity, r.right)
+                };
+            }, { top: Infinity, left: Infinity, bottom: -Infinity, right: -Infinity });
+
             union.width = (union.right ?? 0) - (union.left ?? 0);
             union.height = (union.bottom ?? 0) - (union.top ?? 0);
-            tooltips = [createTooltip(union as DOMRect, currentOptions, overlayFixed)];
+
+            tooltips.push(
+                createTooltip(
+                    union as DOMRect,
+                    {
+                        ...currentOptions,
+                    },
+                    overlayFixed
+                )
+            );
         } else {
-            tooltips = rects.map(r => createTooltip(r, currentOptions, overlayFixed));
+            withoutData.forEach(el => {
+                const idx = elements.indexOf(el);
+                const rect = rects[idx];
+                const posAttr = el.getAttribute('data-target-highlight-tooltip-position') as
+                    | 'top' | 'right' | 'bottom' | 'left'
+                    | null;
+                tooltips.push(
+                    createTooltip(
+                        rect,
+                        {
+                            ...currentOptions,
+                            forceTooltipPosition: posAttr ?? currentOptions.forceTooltipPosition
+                        },
+                        overlayFixed
+                    )
+                );
+            });
         }
     }
+
     window.addEventListener('resize', onResize);
 }
 
