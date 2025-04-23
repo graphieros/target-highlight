@@ -18,45 +18,53 @@ const options: HighlightOptions = {
   forceTooltipPosition: 'right'
 }
 
-targetHighlight('div', options)
+targetHighlight('#div2', options)
 
+// setTimeout(() => {
+//   targetHighlight('h2', {
+//     ...options,
+//     tooltip: 'This is h2'
+//   })
+// }, 1000)
+// setTimeout(() => {
+//   targetHighlight('#div1', {
+//     ...options,
+//   })
+// }, 2000)
+// setTimeout(() => {
+//   targetHighlight('#div2', {
+//     ...options,
+//   })
+// }, 3000)
+// setTimeout(() => {
+//   targetHighlight('#div3', {
+//     ...options,
+//     tooltip: 'This is DIV 3'
+//   })
+// }, 4000)
+// setTimeout(() => {
+//   targetHighlight('.span', {
+//     ...options,
+//     tooltip: 'These are spans'
+//   })
+// }, 5000)
+
+// setTimeout(() => {
+//   targetHighlight('#left', {
+//     ...options,
+//     tooltip: () => {
+//       return `<div>TEST</div>`
+//     }
+//   })
+// }, 6000)
+
+
+// Resizing test:
 setTimeout(() => {
-  targetHighlight('h2', {
-    ...options,
-    tooltip: 'This is h2'
-  })
-}, 1000)
-setTimeout(() => {
-  targetHighlight('#div1', {
-    ...options,
-  })
+  const d2: any = document.getElementById('div2')
+  d2.style.height = '100%'
+  d2.style.width = '500px'
 }, 2000)
-setTimeout(() => {
-  targetHighlight('#div2', {
-    ...options,
-  })
-}, 3000)
-setTimeout(() => {
-  targetHighlight('#div3', {
-    ...options,
-    tooltip: 'This is DIV 3'
-  })
-}, 4000)
-setTimeout(() => {
-  targetHighlight('.span', {
-    ...options,
-    tooltip: 'These are spans'
-  })
-}, 5000)
-
-setTimeout(() => {
-  targetHighlight('#left', {
-    ...options,
-    tooltip: () => {
-      return `<div>TEST</div>`
-    }
-  })
-}, 6000)
 
 setTimeout(() => {
   const btn = document.getElementById('left');

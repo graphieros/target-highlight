@@ -58,6 +58,7 @@ const options = {
   stopCallback: () => {}, // use your callback when clicking on a button with an id of target-highlight-button-stop
   tooltip: "My content", // can also be a callback returning html content
   forceTooltipPosition: null, // 'top' | 'right' | 'bottom' | 'left' | null, default: null
+  useResizeObserver: true, // If true, will trigger a re-render when the highlighted element resizes
 };
 
 // Target an element using any selector

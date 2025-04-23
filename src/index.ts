@@ -19,6 +19,7 @@ export interface HighlightOptions {
         inline?: 'start' | 'center' | 'end' | 'nearest'
     };
     forceTooltipPosition?: 'top' | 'right' | 'bottom' | 'left' | null,
+    useResizeObserver?: boolean
 }
 
 const defaultOptions: Required<HighlightOptions> = {
@@ -35,7 +36,8 @@ const defaultOptions: Required<HighlightOptions> = {
     previousCallback: () => { },
     stopCallback: () => { },
     scrollToTarget: null,
-    forceTooltipPosition: null
+    forceTooltipPosition: null,
+    useResizeObserver: true
 };
 
 let svgOverlay: SVGSVGElement | null = null;
@@ -44,6 +46,7 @@ let tooltips: HTMLElement[] = [];
 let currentSelector: Selector | null = null;
 let currentOptions: Required<HighlightOptions> = { ...defaultOptions };
 let _didScroll = false;
+let resizeObserver: ResizeObserver | null = null;
 
 function isElementOrAncestorFixed(el: Element): boolean {
     let e: Element | null = el;
@@ -427,6 +430,14 @@ function doShow(): void {
     }
 
     window.addEventListener('resize', onResize);
+
+    if (resizeObserver) {
+        resizeObserver.disconnect();
+    }
+    if (currentOptions.useResizeObserver) {
+        resizeObserver = new ResizeObserver(doShow);
+        elements.forEach(el => resizeObserver!.observe(el));
+    }
 }
 
 export function targetHide(): void {
@@ -438,6 +449,11 @@ export function targetHide(): void {
     window.removeEventListener('resize', onResize);
     document.body.removeAttribute('data-target-highlight');
     _didScroll = false;
+
+    if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
+    }
 }
 
 let _lastNext: ((e: Event) => void) | null = null;
