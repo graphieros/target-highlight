@@ -438,6 +438,7 @@ function doShow(): void {
         resizeObserver = new ResizeObserver(doShow);
         elements.forEach(el => resizeObserver!.observe(el));
     }
+    applyStepListeners(currentOptions);
 }
 
 export function targetHide(): void {
