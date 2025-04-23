@@ -435,10 +435,11 @@ function doShow(): void {
         resizeObserver.disconnect();
     }
     if (currentOptions.useResizeObserver) {
-        resizeObserver = new ResizeObserver(doShow);
+        resizeObserver = new ResizeObserver(() => {
+            targetHighlight(currentSelector!, { ...currentOptions })
+        });
         elements.forEach(el => resizeObserver!.observe(el));
     }
-    applyStepListeners(currentOptions);
 }
 
 export function targetHide(): void {
