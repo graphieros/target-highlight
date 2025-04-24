@@ -485,12 +485,14 @@ export function targetHighlight(selectorOrElement: Selector, options: HighlightO
     currentSelector = selectorOrElement;
     currentOptions = { ...defaultOptions, ...options };
 
-    const run = () => setTimeout(doShow, 0);
+    const run = () => setTimeout(() => {
+        doShow();
+        applyStepListeners(options)
+    }, 0);
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', run, { once: true });
     } else {
         run();
-        applyStepListeners(options)
     }
 }
 
