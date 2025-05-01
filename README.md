@@ -188,7 +188,7 @@ Use the data-target-highlight ignore data attribute on elements never to be high
 
 ## Blocked keys
 
-Combine `hidePointerEvents: true` with blocked keys, to prevent events outside of the tour.
+Combine `hidePointerEvents: false` with blocked keys, to prevent events outside of the tour.
 List of all the available blockable keys:
 
 ```ts
