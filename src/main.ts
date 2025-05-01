@@ -1,5 +1,7 @@
 import './style.css'
-import { targetHighlight, targetHide, HighlightOptions } from "../dist/target-highlight.js"
+import { targetHighlight, targetHide, HighlightOptions, KeyboardNavigationKey } from "../dist/target-highlight.js"
+
+const blockedKeys: KeyboardNavigationKey[] = [' ', 'Tab', 'ArrowDown', 'ArrowUp']
 
 const options: HighlightOptions = {
   overlayColor: 'rgba(0,0,0,0.7)',
@@ -17,7 +19,8 @@ const options: HighlightOptions = {
   forceTooltipPosition: 'right',
   nextCallback: () => next('forwards'),
   previousCallback: () => next('back'),
-  stopCallback: targetHide
+  stopCallback: targetHide,
+  blockedKeys
 }
 
 let currentStep = -1;

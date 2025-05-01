@@ -1,5 +1,8 @@
 type Selector = string | Element;
 
+
+export type KeyboardNavigationKey = 'Tab' | 'Enter' | ' ' | 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight' | 'Home' | 'End' | 'PageUp' | 'PageDown' | 'Escape';
+
 export interface HighlightOptions {
     overlayColor?: string;
     borderColor?: string;
@@ -19,6 +22,7 @@ export interface HighlightOptions {
         inline?: 'start' | 'center' | 'end' | 'nearest'
     };
     forceTooltipPosition?: 'top' | 'right' | 'bottom' | 'left' | null,
+    blockedKeys?: KeyboardNavigationKey[]
 }
 
 const defaultOptions: Required<HighlightOptions> = {
@@ -35,7 +39,8 @@ const defaultOptions: Required<HighlightOptions> = {
     previousCallback: () => { },
     stopCallback: () => { },
     scrollToTarget: null,
-    forceTooltipPosition: null
+    forceTooltipPosition: null,
+    blockedKeys: []
 };
 
 let svgOverlay: SVGSVGElement | null = null;
@@ -44,6 +49,31 @@ let tooltips: HTMLElement[] = [];
 let currentSelector: Selector | null = null;
 let currentOptions: Required<HighlightOptions> = { ...defaultOptions };
 let _didScroll = false;
+let _blockedKeys = new Set<KeyboardNavigationKey>()
+let _keysHandler: ((e: KeyboardEvent) => void) | null = null
+
+export function blockKeyboardEvents(keys: KeyboardNavigationKey[]): void {
+    _blockedKeys = new Set(keys);
+    if (!_keysHandler) {
+        _keysHandler = (e) => {
+            if (_blockedKeys.has(e.key as KeyboardNavigationKey)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        };
+        document.addEventListener('keydown', _keysHandler, true);
+        document.addEventListener('keypress', _keysHandler, true);
+    }
+}
+
+export function restoreKeyboardEvents(): void {
+    if (_keysHandler) {
+        document.removeEventListener('keydown', _keysHandler, true);
+        document.removeEventListener('keypress', _keysHandler, true);
+        _keysHandler = null!;
+        _blockedKeys.clear();
+    }
+}
 
 function isElementOrAncestorFixed(el: Element): boolean {
     let e: Element | null = el;
@@ -330,7 +360,7 @@ function doShow(): void {
 
     const overlayFixed = elements.every(isElementOrAncestorFixed);
 
-    targetHide();
+    hideUI();
 
     // compute padded rects
     let rects = elements.map(el => el.getBoundingClientRect());
@@ -424,11 +454,15 @@ function doShow(): void {
         }
     }
 
+    blockKeyboardEvents(currentOptions.blockedKeys ?? []);
     window.addEventListener('resize', onResize);
 }
 
-export function targetHide(): void {
-    if (svgOverlay) { svgOverlay.remove(); svgOverlay = null; }
+function hideUI(): void {
+    if (svgOverlay) {
+        svgOverlay.remove();
+        svgOverlay = null;
+    }
     highlightBorders.forEach(b => b.remove());
     highlightBorders = [];
     tooltips.forEach(t => t.remove());
@@ -436,6 +470,11 @@ export function targetHide(): void {
     window.removeEventListener('resize', onResize);
     document.body.removeAttribute('data-target-highlight');
     _didScroll = false;
+}
+
+export function targetHide(): void {
+    hideUI();
+    restoreKeyboardEvents();
 }
 
 let _lastNext: ((e: Event) => void) | null = null;
@@ -481,6 +520,7 @@ export function applyStepListeners(options: HighlightOptions = {}) {
         }
     }
 }
+
 export function targetHighlight(selectorOrElement: Selector, options: HighlightOptions = {}): void {
     currentSelector = selectorOrElement;
     currentOptions = { ...defaultOptions, ...options };

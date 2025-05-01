@@ -59,6 +59,7 @@ const options = {
   tooltip: "My content", // can also be a callback returning html content
   forceTooltipPosition: null, // 'top' | 'right' | 'bottom' | 'left' | null, default: null
   useResizeObserver: true, // If true, will trigger a re-render when the highlighted element resizes
+  blockedKeys: [], // Add keyboard keys that will be inactive when the application is running
 };
 
 // Target an element using any selector
@@ -138,12 +139,16 @@ const options = {
   stopCallback: targetHide,
 };
 
+// Define blocked keys
+const blockedKeys = [" ", "Tab"];
+
 // Define a function to call the library and apply event listeners
 // In this example, chevron icons are added as plain svg
 // Buttons with id #target-highlight-button-previous and #target-highlight-button-next will be recognized by the library, and events attached to them.
 function applySteps() {
   targetHighlight(`[data-step="${step.current}"]`, {
     ...options,
+    blockedKeys,
     tooltip: () => {
       return `<div style="position:relative; padding: 0 24px">This is step ${step.value}</div><button id="target-highlight-button-previous" style="position: absolute; top: 50%; left: 0; transform: translateY(-50%)">${chevronLeftIcon}</button><button id="target-highlight-button-next" style="position: absolute; top: 50%; right: 0; transform: translateY(-50%)">${chevronRightIcon}</button>`;
     },
@@ -180,3 +185,45 @@ Use the data-target-highlight ignore data attribute on elements never to be high
 <div class="selection">I will be selected</div>
 <div class="selection" data-target-highlight-ignore>I will not be selected</div>
 ```
+
+## Blocked keys
+
+Combine `hidePointerEvents: true` with blocked keys, to prevent events outside of the tour.
+List of all the available blockable keys:
+
+```ts
+type KeyboardNavigationKey =
+  | " "
+  | "Tab"
+  | "Enter"
+  | "ArrowUp"
+  | "ArrowDown"
+  | "ArrowLeft"
+  | "ArrowRight"
+  | "Home"
+  | "End"
+  | "PageUp"
+  | "PageDown"
+  | "Escape";
+```
+
+Set blocked keys in the options object:
+
+```js
+blockedKeys: [
+  " ",
+  "Tab",
+  "Enter",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
+  "Escape",
+];
+```
+
+Blocked events will be restored when `targetHide` is called.
