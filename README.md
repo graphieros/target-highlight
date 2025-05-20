@@ -227,3 +227,38 @@ blockedKeys: [
 ```
 
 Blocked events will be restored when `targetHide` is called.
+
+## Tooltip transitions
+
+This library does not inject CSS. To enable tooltip transitions, add for example the following to your app’s global styles:
+
+```css
+.target-highlight-tooltip {
+  opacity: 1;
+  transition: opacity 0.3s;
+  will-change: opacity;
+}
+
+.target-highlight-tooltip.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+.target-highlight-tooltip.fade-out {
+  opacity: 1;
+  animation: fadeOut 0.3s forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+```

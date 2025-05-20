@@ -204,7 +204,37 @@ function createTooltip(
         visibility: 'hidden',
         zIndex: String(opts.overlayZIndex),
     });
+
     document.body.appendChild(tip);
+
+    tip.classList.add('fade-in');
+    requestAnimationFrame(() => {
+        tip.classList.remove('fade-in');
+    });
+
+    const btnNext = tip.querySelector<HTMLElement>('#target-highlight-button-next');
+    const btnPrev = tip.querySelector<HTMLElement>('#target-highlight-button-previous');
+    const btnStop = tip.querySelector<HTMLElement>('#target-highlight-button-stop');
+
+    if (btnNext && typeof opts.nextCallback === 'function') {
+        btnNext.onclick = (e) => {
+            e.stopPropagation()
+            setTimeout(opts.nextCallback, 0)
+        };
+    }
+    if (btnPrev && typeof opts.previousCallback === 'function') {
+        btnPrev.onclick = (e) => {
+            e.stopPropagation()
+            setTimeout(opts.previousCallback, 0)
+        }
+    }
+    if (btnStop && typeof opts.stopCallback === 'function') {
+        
+        btnStop.onclick = (e) => {
+            e.stopPropagation();
+            setTimeout(opts.stopCallback, 0)
+        }
+    }
 
     const w = tip.offsetWidth;
     const h = tip.offsetHeight;
@@ -465,60 +495,67 @@ function hideUI(): void {
     }
     highlightBorders.forEach(b => b.remove());
     highlightBorders = [];
-    tooltips.forEach(t => t.remove());
+
+    tooltips.forEach(tip => {
+        tip.classList.remove('fade-in');
+        tip.classList.add('fade-out');
+        // Check if the element will animate
+        const computed = getComputedStyle(tip);
+        const hasAnimation = computed.animationName !== 'none' && computed.animationDuration !== '0s';
+        if (hasAnimation) {
+            tip.addEventListener('animationend', () => tip.remove(), { once: true });
+        } else {
+            // Defer to next tick so click events finish
+            requestAnimationFrame(() => tip.remove());
+        }
+    });
     tooltips = [];
+
     window.removeEventListener('resize', onResize);
     document.body.removeAttribute('data-target-highlight');
     _didScroll = false;
 }
+
 
 export function targetHide(): void {
     hideUI();
     restoreKeyboardEvents();
 }
 
-let _lastNext: ((e: Event) => void) | null = null;
-let _lastPrev: ((e: Event) => void) | null = null;
-let _lastStop: ((e: Event) => void) | null = null;
-
 export function applyStepListeners(options: HighlightOptions = {}) {
-    const btnNext = document.querySelector<HTMLElement>('#target-highlight-button-next');
-    const btnPrev = document.querySelector<HTMLElement>('#target-highlight-button-previous');
-    const btnStop = document.querySelector<HTMLElement>('#target-highlight-button-stop');
     const { nextCallback, previousCallback, stopCallback } = options;
 
-    if (btnNext) {
-        if (_lastNext) {
-            btnNext.removeEventListener('click', _lastNext);
-            _lastNext = null;
-        }
-        if (typeof nextCallback === 'function') {
-            btnNext.addEventListener('click', nextCallback);
-            _lastNext = nextCallback;
-        }
+    function makeHandler(fn?: () => void) {
+        if (typeof fn !== 'function') return undefined;
+        return function handler(e: Event) {
+            e.stopPropagation();
+            e.preventDefault();
+            setTimeout(() => fn(), 0);
+        };
     }
 
-    if (btnPrev) {
-        if (_lastPrev) {
-            btnPrev.removeEventListener('click', _lastPrev);
-            _lastPrev = null;
-        }
-        if (typeof previousCallback === 'function') {
-            btnPrev.addEventListener('click', previousCallback);
-            _lastPrev = previousCallback;
-        }
-    }
+    document.querySelectorAll<HTMLElement>('#target-highlight-button-next').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true) as HTMLElement);
+    });
+    document.querySelectorAll<HTMLElement>('#target-highlight-button-previous').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true) as HTMLElement);
+    });
+    document.querySelectorAll<HTMLElement>('#target-highlight-button-stop').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true) as HTMLElement);
+    });
 
-    if (btnStop) {
-        if (_lastStop) {
-            btnStop.removeEventListener('click', _lastStop);
-            _lastStop = null;
-        }
-        if (typeof stopCallback === 'function') {
-            btnStop.addEventListener('click', stopCallback);
-            _lastStop = stopCallback;
-        }
-    }
+    document.querySelectorAll<HTMLElement>('#target-highlight-button-next').forEach(btn => {
+        const handler = makeHandler(nextCallback);
+        if (handler) btn.addEventListener('click', handler, { once: true });
+    });
+    document.querySelectorAll<HTMLElement>('#target-highlight-button-previous').forEach(btn => {
+        const handler = makeHandler(previousCallback);
+        if (handler) btn.addEventListener('click', handler, { once: true });
+    });
+    document.querySelectorAll<HTMLElement>('#target-highlight-button-stop').forEach(btn => {
+        const handler = makeHandler(stopCallback);
+        if (handler) btn.addEventListener('click', handler, { once: true });
+    });
 }
 
 export function targetHighlight(selectorOrElement: Selector, options: HighlightOptions = {}): void {
