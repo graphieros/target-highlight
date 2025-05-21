@@ -5,7 +5,7 @@ const blockedKeys: KeyboardNavigationKey[] = [' ', 'Tab', 'ArrowDown', 'ArrowUp'
 
 const options: HighlightOptions = {
   overlayColor: 'rgba(0,0,0,0.7)',
-  borderColor: "transparent",
+  borderColor: "#FF0000",
   singleTooltip: false,
   padding: '2px',
   borderRadius: 2,
@@ -25,22 +25,32 @@ const options: HighlightOptions = {
 
 let currentStep = -1;
 
-const steps = [
+type Step = {
+  selector: string
+  tooltip: string
+  forceTooltipPosition: 'top' | 'right' | 'bottom' | 'left' | null,
+}
+
+const steps: Step[] = [
   {
     selector: '#div1',
-    tooltip: 'This is div1'
+    tooltip: 'This is div1 qsdj qskdlj qslkdj qsljdlq sjdjq skdjq sdjqlks djlqksjd lqkjsd kj lqskdj lkjl kqsldkj qlskdjq lksdj lkqjsd lkqjs djlqksj dlkjq sldkjq slkdjq skdj qlskjd lqksjd qlkjsd',
+    forceTooltipPosition: 'top'
   },
   {
     selector: '#div2',
-    tooltip: 'This is div2'
+    tooltip: 'This is div2',
+    forceTooltipPosition: 'right',
   },
   {
     selector: '#div3',
-    tooltip: 'This is div3'
+    tooltip: 'This is div3',
+    forceTooltipPosition: 'left',
   },
   {
     selector: '#div4',
-    tooltip: 'This is div4'
+    tooltip: 'This is div4 qsdj qskdlj qslkdj qsljdlq sjdjq skdjq sdjqlks djlqksjd lqkjsd kj lqskdj lkjl kqsldkj qlskdjq lksdj lkqjsd lkqjs djlqksj dlkjq sldkjq slkdjq skdj qlskjd lqksjd qlkjsd lqksjd lkqjs dlkjq sdlkjqs dlqj sldjq slkdjq lsjdq lsdjq sdkj qlsjd qlsjd lqkjsd qljs dlqjs dlqj sdljq sldj',
+    forceTooltipPosition: 'bottom',
   }
 ]
 
@@ -61,6 +71,7 @@ function next(direction: 'forwards' | 'back') {
 
   targetHighlight(steps[currentStep].selector, {
     ...options,
+    forceTooltipPosition: steps[currentStep].forceTooltipPosition,
     tooltip: () => {
       return `
         <div>

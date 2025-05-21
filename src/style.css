@@ -39,29 +39,81 @@ h1 {
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 14px;
+  max-width: 300px;
 }
 
 .target-highlight-tooltip {
   opacity: 1;
-  transition: opacity 0.3s;
-  will-change: opacity;
+  transform: scale(1,1);
+  transition: opacity 0.3s transform 0.3s;
+  will-change: opacity transform;
 }
 
 .target-highlight-tooltip.fade-in {
   opacity: 0;
+  transform: scale(0,0);
   animation: fadeIn 0.3s forwards;
 }
 
 .target-highlight-tooltip.fade-out {
   opacity: 1;
+  transform: scale(1,1);
   animation: fadeOut 0.3s forwards;
   pointer-events: none;
 }
 
+.target-highlight-border {
+  opacity: 1;
+  transition: opacity 0.3s;
+  will-change: opacity;
+}
+.target-highlight-border.fade-in {
+  opacity: 0;
+  animation: fadeInBorder 0.3s forwards;
+}
+.target-highlight-border.fade-out {
+  opacity: 1;
+  animation: fadeOutBorder 0.3s forwards;
+}
+
 @keyframes fadeIn {
-  to { opacity: 1; }
+  from { 
+    opacity: 0; 
+    transform: scale(0,0);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1,1);
+  }
 }
 
 @keyframes fadeOut {
-  to { opacity: 0; }
+  from { 
+    opacity: 1;
+    transform: scale(1,1);
+  }
+  to { 
+    opacity: 0;
+    transform: scale(0,0);
+  }
 }
+
+
+@keyframes fadeInBorder {
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOutBorder {
+  from { 
+    opacity: 1;
+  }
+  to { 
+    opacity: 0;
+  }
+}
+
