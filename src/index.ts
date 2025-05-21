@@ -171,7 +171,7 @@ function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>, ov
 
 function createBorder(rect: DOMRect, opts: Required<HighlightOptions>, overlayFixed: boolean): HTMLElement {
     const border = document.createElement('div');
-    border.classList.add('target-highlight-border', 'fade-in');
+    border.classList.add('target-highlight-border');
     const left = overlayFixed ? rect.left : rect.left + window.scrollX;
     const top = overlayFixed ? rect.top : rect.top + window.scrollY;
     Object.assign(border.style, {
@@ -491,11 +491,7 @@ function hideUI(): void {
         svgOverlay.remove();
         svgOverlay = null;
     }
-    highlightBorders.forEach(b => {
-        b.classList.remove('fade-in');
-        b.classList.add('fade-out');
-        b.addEventListener('animationend', () => b.remove(), { once: true });
-    });
+    highlightBorders.forEach(b => b.remove());
     highlightBorders = [];
 
     tooltips.forEach(tip => {
