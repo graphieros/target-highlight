@@ -1,5 +1,5 @@
 type Selector = string | Element;
-
+type Placement = 'top' | 'bottom' | 'right' | 'left';
 
 export type KeyboardNavigationKey = 'Tab' | 'Enter' | ' ' | 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight' | 'Home' | 'End' | 'PageUp' | 'PageDown' | 'Escape';
 
@@ -108,6 +108,8 @@ function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>, ov
     const pageHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
 
     const svg = document.createElementNS(XMLNS, 'svg');
+    svg.classList.add('target-highlight-overlay');
+
     Object.assign(svg.style, {
         position: overlayFixed ? 'fixed' : 'absolute',
         top: '0',
@@ -169,6 +171,7 @@ function createSvgOverlay(rects: DOMRect[], opts: Required<HighlightOptions>, ov
 
 function createBorder(rect: DOMRect, opts: Required<HighlightOptions>, overlayFixed: boolean): HTMLElement {
     const border = document.createElement('div');
+    border.classList.add('target-highlight-border');
     const left = overlayFixed ? rect.left : rect.left + window.scrollX;
     const top = overlayFixed ? rect.top : rect.top + window.scrollY;
     Object.assign(border.style, {
@@ -208,9 +211,6 @@ function createTooltip(
     document.body.appendChild(tip);
 
     tip.classList.add('fade-in');
-    requestAnimationFrame(() => {
-        tip.classList.remove('fade-in');
-    });
 
     const btnNext = tip.querySelector<HTMLElement>('#target-highlight-button-next');
     const btnPrev = tip.querySelector<HTMLElement>('#target-highlight-button-previous');
@@ -229,7 +229,6 @@ function createTooltip(
         }
     }
     if (btnStop && typeof opts.stopCallback === 'function') {
-        
         btnStop.onclick = (e) => {
             e.stopPropagation();
             setTimeout(opts.stopCallback, 0)
@@ -244,7 +243,6 @@ function createTooltip(
     const clamp = (v: number, min: number, max: number) =>
         Math.min(Math.max(v, min), max);
 
-    type Placement = 'top' | 'bottom' | 'right' | 'left';
     const candidates: Array<{ name: Placement; l: number; t: number }> = [
         { name: 'top', l: rect.left + (rect.width - w) / 2, t: rect.top - h - margin },
         { name: 'bottom', l: rect.left + (rect.width - w) / 2, t: rect.bottom + margin },
@@ -499,7 +497,6 @@ function hideUI(): void {
     tooltips.forEach(tip => {
         tip.classList.remove('fade-in');
         tip.classList.add('fade-out');
-        // Check if the element will animate
         const computed = getComputedStyle(tip);
         const hasAnimation = computed.animationName !== 'none' && computed.animationDuration !== '0s';
         if (hasAnimation) {
