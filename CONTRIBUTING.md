@@ -34,13 +34,14 @@ This project follows the [Contributor Covenant v2.1][coc]. Please read it to ens
    git clone https://github.com/<your‑username>/target-highlight.git
    cd target-highlight
    ```
-3. **Install dependencies**
+3. **Install dependencies** using the pnpm version pinned in `package.json`.
 
 ```bash
-npm install
-# or yarn
-yarn
+pnpm install --frozen-lockfile
+pnpm dev
 ```
+
+Run `pnpm build` to type-check and build the library.
 
 ## Reporting issues
 

@@ -3,9 +3,10 @@
   "homepage": "https://target-highlight.graphieros.com/",
   "private": false,
   "version": "0.10.0",
+  "packageManager": "pnpm@12.15.0",
   "type": "module",
   "description": "Highlight DOM elements by overlaying the rest of the page",
-  "types": "dist/index.d.ts",
+  "types": "./dist/target-highlight.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -27,17 +28,14 @@
     "type": "git",
     "url": "git+https://github.com/graphieros/target-highlight.git"
   },
-  "main": "dist/target-highlight.umd.cjs",
-  "module": "dist/target-highlight.js",
   "exports": {
     ".": {
-      "import": "./dist/target-highlight.js",
-      "require": "./dist/target-highlight.umd.cjs"
+      "import": "./dist/target-highlight.js"
     }
   },
   "devDependencies": {
-    "typescript": "~5.7.2",
-    "vite": "^6.3.4",
-    "vite-plugin-dts": "^4.5.3"
+    "typescript": "~5.7.3",
+    "vite": "^8.3.8",
+    "vite-plugin-dts": "^5.1.2"
   }
 }

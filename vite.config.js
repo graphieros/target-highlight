@@ -32,12 +32,13 @@ export default defineConfig({
     build: {
         lib: {
             entry: resolve(__dirname, 'src/index.ts'),
-            name: 'TargetHighlight',
+            formats: ['es'],
             fileName: 'target-highlight',
         },
-        rollupOptions: {
-            external: [],
-            output: { globals: {} },
+        rolldownOptions: {
+            output: {
+                minify: true,
+            },
         },
         outDir: 'dist',
         emptyOutDir: true,
